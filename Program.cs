@@ -23,10 +23,44 @@ namespace VacuumCleanerRobot
         {
           for (int y = 0; y < height; y++)
           {
-            _grid[x, y] = CellType.Dirt;
+            _grid[x, y] = CellType.Empty;
           }
         }
       }
+
+      public bool IsInBounds(int x, int y)
+      {
+        return x >= 0 && x < this.Width && y >= 0 && y < this.Height;
+      }
+
+      public bool IsDirt(int x, int y)
+      {
+        return IsInBounds(x, y) && _grid[x, y] == CellType.Dirt;
+      }
+
+      public bool IsObstacles(int x, int y)
+      {
+        return IsInBounds(x, y) && _grid[x, y] == CellType.Obstacle;
+      }
+
+      public void AddObstacle(int x, int y)
+      {
+        _grid[x, y] = CellType.Obstacle;
+      }
+
+      public void AddDirt(int x, int y)
+      {
+        _grid[x, y] = CellType.Dirt;
+      }
+
+      public void Clean(int x, int y)
+      {
+        if (IsInBounds(x, y))
+        {
+          _grid[x, y] = CellType.Cleaned;
+        }
+      }
+
 
       public void Display(int robotX, int robotY)
       {
