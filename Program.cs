@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace VacuumCleanerRobot
 {
@@ -9,6 +8,9 @@ namespace VacuumCleanerRobot
     private CellType[,] _grid;
     public int Width { get; private set; }
     public int Height { get; private set; }
+
+    public int xRobot { get; set; }
+    public int yRobot { get; set; }
 
     public Map(int width, int height)
     {
@@ -60,8 +62,11 @@ namespace VacuumCleanerRobot
 
     public void Display(int robotX, int robotY)
     {
+      this.xRobot = robotX;
+      this.yRobot = robotY;
+
       // display the 2d grid, it accepts the location of the robot in x and y
-      Console.Clear();
+      //Console.Clear();
       Console.WriteLine("Vacuum cleaner robot simulation");
       Console.WriteLine("---------------------------------");
       Console.WriteLine("Legends: #=Obstacles, D=Dirt, .=Empty, R=Robot, C=Cleaned");
@@ -74,6 +79,7 @@ namespace VacuumCleanerRobot
           if (x == robotX && y == robotY)
           {
             Console.Write("R ");
+
           }
           else
           {
@@ -95,6 +101,7 @@ namespace VacuumCleanerRobot
 
   public class Robot
   {
+    //private ICleaningStrategy cleaningStrategy;
     private readonly Map _map;
     public int X { get; set; }
     public int Y { get; set; }
@@ -130,6 +137,7 @@ namespace VacuumCleanerRobot
       }
     }
 
+    /*
     public void StartCleaning()
     {
       Console.Write("Start cleaning the room");
@@ -151,6 +159,47 @@ namespace VacuumCleanerRobot
       }
 
     }
+    */
+  }
+
+  public class ICleaningStrategy
+  {
+    public void Clean(Robot robot, Map map)
+    {
+
+    }
+
+  }
+
+  public class S_PatternStrategy
+  {
+    public void Clean(Robot robot, Map _map)
+    {
+      Console.Write("Start cleaning the room");
+      // flag that determines the direction
+
+      int direction = 1;
+
+      // changed the y direction based on the initialized Y position of the robot
+      for (int y = _map.yRobot; y < _map.Height; y++)
+      {
+        // (direction == 1) ? "1" -> change this based on the current position of robot
+        int startX = (direction == 1) ? _map.xRobot : _map.Width - 1;
+        int endX = (direction == 1) ? _map.Width : -1;
+
+        for (int x = startX; x != endX; x += direction)
+        {
+          robot.Move(x, y);
+          robot.CleanCurrentSpot();
+        }
+        direction *= -1; // reverse direciton for the next row
+      }
+    }
+  }
+
+  public class RandomPathStrategy
+  {
+
   }
   public class Program
   {
@@ -158,21 +207,21 @@ namespace VacuumCleanerRobot
     {
       Console.WriteLine("Initialize Robot");
 
-      Map map = new Map(20, 10);
+      Map map = new Map(5, 5);
 
-      //map.Display(10, 10);
-      map.AddDirt(5, 3);
-      map.AddDirt(10, 8);
-      map.AddObstacle(2, 5);
-      map.AddObstacle(12, 1);
+      map.AddDirt(2, 3);
+      //map.AddDirt(4, 4);
+      //map.AddObstacle(3, 3);
 
-      map.Display(11, 8);
+      map.Display(1, 1);
 
       Robot robot = new Robot(map);
 
-      robot.StartCleaning();
+      S_PatternStrategy s_Pattern = new S_PatternStrategy();
 
-      Console.WriteLine("Done");
+      s_Pattern.Clean(robot, map);
+
+      //Console.WriteLine("Done");
     }
   }
 }
