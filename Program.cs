@@ -66,7 +66,7 @@ namespace VacuumCleanerRobot
       this.yRobot = robotY;
 
       // display the 2d grid, it accepts the location of the robot in x and y
-      //Console.Clear();
+      Console.Clear();
       Console.WriteLine("Vacuum cleaner robot simulation");
       Console.WriteLine("---------------------------------");
       Console.WriteLine("Legends: #=Obstacles, D=Dirt, .=Empty, R=Robot, C=Cleaned");
@@ -136,30 +136,6 @@ namespace VacuumCleanerRobot
         _map.Display(this.X, this.Y);
       }
     }
-
-    /*
-    public void StartCleaning()
-    {
-      Console.Write("Start cleaning the room");
-      // flag that determines the direction
-
-      int direction = 1;
-
-      for (int y = 0; y < _map.Height; y++)
-      {
-        int startX = (direction == 1) ? 0 : _map.Width - 1;
-        int endX = (direction == 1) ? _map.Width : -1;
-
-        for (int x = startX; x != endX; x += direction)
-        {
-          Move(x, y);
-          CleanCurrentSpot();
-        }
-        direction *= -1; // reverse direciton for the next row
-      }
-
-    }
-    */
   }
 
   public class ICleaningStrategy
@@ -199,6 +175,90 @@ namespace VacuumCleanerRobot
 
   public class RandomPathStrategy
   {
+    private Random random = new Random();
+    private List<int[]> arr = new List<int[]>();
+
+    public void Clean(Robot robot, Map _map)
+    {
+      while (true)
+      {
+        // add if top exist
+        if (_map.IsInBounds(_map.xRobot - 1, _map.yRobot) && !(_map.IsObstacles(_map.xRobot - 1, _map.yRobot)))
+        {
+          arr.Add(new int[] { _map.xRobot - 1, _map.yRobot });
+        }
+
+        // add if top left exist
+        if (_map.IsInBounds(_map.xRobot - 1, _map.yRobot - 1) && !(_map.IsObstacles(_map.xRobot - 1, _map.yRobot - 1)))
+        {
+          arr.Add(new int[] { _map.xRobot - 1, _map.yRobot - 1 });
+        }
+
+        // add if top right exist
+
+        if (_map.IsInBounds(_map.xRobot - 1, _map.yRobot + 1) && !(_map.IsObstacles(_map.xRobot - 1, _map.yRobot + 1)))
+        {
+          arr.Add(new int[] { _map.xRobot - 1, _map.yRobot + 1 });
+        }
+
+        // add if left exist
+        if (_map.IsInBounds(_map.xRobot, _map.yRobot - 1) && !(_map.IsObstacles(_map.xRobot, _map.yRobot - 1)))
+        {
+          arr.Add(new int[] { _map.xRobot, _map.yRobot - 1 });
+        }
+
+        // add if right exist
+        if (_map.IsInBounds(_map.xRobot, _map.yRobot + 1) && !(_map.IsObstacles(_map.xRobot, _map.yRobot + 1)))
+        {
+          arr.Add(new int[] { _map.xRobot, _map.yRobot + 1 });
+        }
+
+        // add if bottom exist
+        if (_map.IsInBounds(_map.xRobot + 1, _map.yRobot) && !(_map.IsObstacles(_map.xRobot + 1, _map.yRobot)))
+        {
+          arr.Add(new int[] { _map.xRobot + 1, _map.yRobot });
+        }
+
+        // add if bottom left exist
+        if (_map.IsInBounds(_map.xRobot + 1, _map.yRobot - 1) && !(_map.IsObstacles(_map.xRobot + 1, _map.yRobot - 1)))
+        {
+          arr.Add(new int[] { _map.xRobot + 1, _map.yRobot - 1 });
+        }
+
+
+        // add if bottom right exist
+        if (_map.IsInBounds(_map.xRobot + 1, _map.yRobot + 1) && !(_map.IsObstacles(_map.xRobot + 1, _map.yRobot + 1)))
+        {
+          arr.Add(new int[] { _map.xRobot + 1, _map.yRobot + 1 });
+        }
+
+
+        int r = random.Next(arr.Count);
+
+        Console.WriteLine(r);
+
+        int[] temp = arr[r];
+
+        robot.Move(temp[0], temp[1]);
+        robot.CleanCurrentSpot();
+        arr.Clear();
+      }
+      /*
+      Console.WriteLine($"x: {_map.xRobot}");
+      Console.WriteLine($"y: {_map.yRobot}");
+
+      Console.WriteLine($"up: {_map.IsInBounds(_map.xRobot - 1, _map.yRobot)}");
+      Console.WriteLine($"left: {_map.IsInBounds(_map.xRobot, _map.yRobot - 1)}");
+      Console.WriteLine($"right: {_map.IsInBounds(_map.xRobot, _map.yRobot + 1)}");
+      Console.WriteLine($"down: {_map.IsInBounds(_map.xRobot + 1, _map.yRobot)}");
+
+      */
+    }
+
+    public bool CheckSurroundings(int x, int y)
+    {
+      return true; // change 
+    }
 
   }
   public class Program
@@ -207,21 +267,29 @@ namespace VacuumCleanerRobot
     {
       Console.WriteLine("Initialize Robot");
 
-      Map map = new Map(5, 5);
+      Map map = new Map(10, 10);
 
-      map.AddDirt(2, 3);
-      //map.AddDirt(4, 4);
-      //map.AddObstacle(3, 3);
+      map.AddDirt(0, 1);
+      map.AddDirt(5, 5);
+      map.AddDirt(6, 5);
 
-      map.Display(1, 1);
+      map.AddObstacle(2, 2);
+      map.AddObstacle(2, 1);
+      map.AddObstacle(1, 2);
+      map.AddObstacle(1, 1);
+      map.AddObstacle(4, 4);
+      map.AddObstacle(4, 3);
+      map.AddObstacle(3, 4);
+      map.AddObstacle(3, 3);
+
+      map.Display(0, 0);
+
+      RandomPathStrategy randomPath = new RandomPathStrategy();
 
       Robot robot = new Robot(map);
 
-      S_PatternStrategy s_Pattern = new S_PatternStrategy();
+      randomPath.Clean(robot, map);
 
-      s_Pattern.Clean(robot, map);
-
-      //Console.WriteLine("Done");
     }
   }
 }
