@@ -101,7 +101,7 @@ namespace VacuumCleanerRobot
 
   public class Robot
   {
-    //private ICleaningStrategy cleaningStrategy;
+    private ICleaningStrategy _cleaningStrategy;
     private readonly Map _map;
     public int X { get; set; }
     public int Y { get; set; }
@@ -136,18 +136,33 @@ namespace VacuumCleanerRobot
         _map.Display(this.X, this.Y);
       }
     }
-  }
 
-  public class ICleaningStrategy
-  {
-    public void Clean(Robot robot, Map map)
+
+    public void SetStrategy(ICleaningStrategy cleaningStrategy)
     {
+      _cleaningStrategy = cleaningStrategy;
+    }
 
+    public void StartCleaning()
+    {
+      if (_cleaningStrategy == null)
+      {
+        Console.WriteLine("NO STRATEGY FOUND!");
+        return;
+      }
+
+      _cleaningStrategy.Clean(this, _map);
     }
 
   }
 
-  public class S_PatternStrategy
+  public interface ICleaningStrategy
+  {
+    void Clean(Robot robot, Map map);
+
+  }
+
+  public class S_PatternStrategy : ICleaningStrategy
   {
     public void Clean(Robot robot, Map _map)
     {
@@ -159,21 +174,44 @@ namespace VacuumCleanerRobot
       // changed the y direction based on the initialized Y position of the robot
       for (int y = _map.yRobot; y < _map.Height; y++)
       {
-        // (direction == 1) ? "1" -> change this based on the current position of robot
+
+        // changed x based on the initialized position of x
         int startX = (direction == 1) ? _map.xRobot : _map.Width - 1;
         int endX = (direction == 1) ? _map.Width : -1;
 
+        bool rowInterrupted = false;
+
         for (int x = startX; x != endX; x += direction)
         {
+          if (!_map.IsInBounds(x, y) || _map.IsObstacles(x, y))
+          {
+            Console.WriteLine($"Obstacle ahead at ({x},{y})"); // debug purpose
+
+            rowInterrupted = true;
+
+            // flip immediately if moving right → left
+            if (direction == -1)
+            {
+              direction *= -1; // switch to left → right for the next row
+            }
+
+            break; // stop this row early
+          }
+
           robot.Move(x, y);
           robot.CleanCurrentSpot();
         }
-        direction *= -1; // reverse direciton for the next row
+
+        // if row finished normally, flip as usual
+        if (!rowInterrupted)
+        {
+          direction *= -1;
+        }
       }
     }
   }
 
-  public class RandomPathStrategy
+  public class RandomPathStrategy : ICleaningStrategy
   {
     private Random random = new Random();
     private List<int[]> arr = new List<int[]>();
@@ -225,7 +263,6 @@ namespace VacuumCleanerRobot
           arr.Add(new int[] { _map.xRobot + 1, _map.yRobot - 1 });
         }
 
-
         // add if bottom right exist
         if (_map.IsInBounds(_map.xRobot + 1, _map.yRobot + 1) && !(_map.IsObstacles(_map.xRobot + 1, _map.yRobot + 1)))
         {
@@ -235,7 +272,7 @@ namespace VacuumCleanerRobot
 
         int r = random.Next(arr.Count);
 
-        Console.WriteLine(r);
+        //Console.WriteLine(r);
 
         int[] temp = arr[r];
 
@@ -243,21 +280,6 @@ namespace VacuumCleanerRobot
         robot.CleanCurrentSpot();
         arr.Clear();
       }
-      /*
-      Console.WriteLine($"x: {_map.xRobot}");
-      Console.WriteLine($"y: {_map.yRobot}");
-
-      Console.WriteLine($"up: {_map.IsInBounds(_map.xRobot - 1, _map.yRobot)}");
-      Console.WriteLine($"left: {_map.IsInBounds(_map.xRobot, _map.yRobot - 1)}");
-      Console.WriteLine($"right: {_map.IsInBounds(_map.xRobot, _map.yRobot + 1)}");
-      Console.WriteLine($"down: {_map.IsInBounds(_map.xRobot + 1, _map.yRobot)}");
-
-      */
-    }
-
-    public bool CheckSurroundings(int x, int y)
-    {
-      return true; // change 
     }
 
   }
@@ -269,26 +291,26 @@ namespace VacuumCleanerRobot
 
       Map map = new Map(10, 10);
 
-      map.AddDirt(0, 1);
-      map.AddDirt(5, 5);
-      map.AddDirt(6, 5);
-
-      map.AddObstacle(2, 2);
-      map.AddObstacle(2, 1);
-      map.AddObstacle(1, 2);
-      map.AddObstacle(1, 1);
-      map.AddObstacle(4, 4);
       map.AddObstacle(4, 3);
-      map.AddObstacle(3, 4);
-      map.AddObstacle(3, 3);
+      map.AddObstacle(5, 3);
+      map.AddObstacle(5, 5);
+      map.AddObstacle(5, 4);
+      map.AddObstacle(4, 5);
+      map.AddObstacle(4, 4);
+      map.AddObstacle(4, 6);
+      map.AddObstacle(5, 6);
 
       map.Display(0, 0);
 
-      RandomPathStrategy randomPath = new RandomPathStrategy();
+
 
       Robot robot = new Robot(map);
 
-      randomPath.Clean(robot, map);
+      robot.SetStrategy(new S_PatternStrategy());
+      robot.StartCleaning();
+
+
+
 
     }
   }
