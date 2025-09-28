@@ -188,7 +188,6 @@ namespace VacuumCleanerRobot
 
             rowInterrupted = true;
 
-            // always flip on obstacle (both directions)
             direction *= -1;
 
             break; // stop this row early
@@ -300,14 +299,19 @@ namespace VacuumCleanerRobot
 
       map.AddDirt(0, 5);
       map.AddDirt(0, 6);
+      map.AddDirt(9, 6);
+      map.AddDirt(9, 5);
 
-      map.Display(0, 0);
+      map.Display(2, 2);
 
 
 
       Robot robot = new Robot(map);
 
       robot.SetStrategy(new S_PatternStrategy());
+      robot.StartCleaning();
+
+      robot.SetStrategy(new RandomPathStrategy());
       robot.StartCleaning();
 
 
