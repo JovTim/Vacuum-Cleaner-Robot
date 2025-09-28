@@ -174,9 +174,8 @@ namespace VacuumCleanerRobot
       // changed the y direction based on the initialized Y position of the robot
       for (int y = _map.yRobot; y < _map.Height; y++)
       {
-
-        // changed x based on the initialized position of x
-        int startX = (direction == 1) ? _map.xRobot : _map.Width - 1;
+        // start the robot based on the initialized position X
+        int startX = _map.xRobot;
         int endX = (direction == 1) ? _map.Width : -1;
 
         bool rowInterrupted = false;
@@ -185,24 +184,23 @@ namespace VacuumCleanerRobot
         {
           if (!_map.IsInBounds(x, y) || _map.IsObstacles(x, y))
           {
-            Console.WriteLine($"Obstacle ahead at ({x},{y})"); // debug purpose
+            Console.WriteLine($"Obstacle ahead at ({x},{y})");
 
             rowInterrupted = true;
 
-            // flip immediately if moving right to left
-            if (direction == -1)
-            {
-              direction *= -1; // switch to left to right for the next row
-            }
+            // always flip on obstacle (both directions)
+            direction *= -1;
 
             break; // stop this row early
           }
 
           robot.Move(x, y);
           robot.CleanCurrentSpot();
+
+          _map.xRobot = x;
         }
 
-        // if row finished normally, flip as usual
+        // only flip if row was completed normally
         if (!rowInterrupted)
         {
           direction *= -1;
@@ -299,6 +297,9 @@ namespace VacuumCleanerRobot
       map.AddObstacle(4, 4);
       map.AddObstacle(4, 6);
       map.AddObstacle(5, 6);
+
+      map.AddDirt(0, 5);
+      map.AddDirt(0, 6);
 
       map.Display(0, 0);
 
