@@ -189,10 +189,10 @@ namespace VacuumCleanerRobot
 
             rowInterrupted = true;
 
-            // flip immediately if moving right → left
+            // flip immediately if moving right to left
             if (direction == -1)
             {
-              direction *= -1; // switch to left → right for the next row
+              direction *= -1; // switch to left to right for the next row
             }
 
             break; // stop this row early
